@@ -1,0 +1,35 @@
+# default EOL behavior: use LF in repo, normalize (convert to native) during checkout
+* text=auto
+
+.gitignore text
+.gitattributes text
+
+# text files to be explicitly normalized
+*.java       text
+*.html       text
+*.xml        text
+*.properties text
+*.prefs      text
+*.js         text
+*.css        text
+*.json       text
+.project     text
+.classpath   text
+
+# text files that will always have LF EOLs
+*.sh text eol=lf
+
+# text files that will always have CRLF EOLs
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.btm text eol=crlf
+*.ps1 text eol=crlf
+
+# binary files
+*.jar   binary
+*.war   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.pdf   binary
