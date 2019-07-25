@@ -22,4 +22,4 @@ A `Jenkinsfile` is included to build this plugin on Jenkins CI with several JDK 
 
 Install the `explorviz-plugin.hpi` file in Jenkins under `Manage Jenkins -> Manage Plugins -> Advanced -> Upload Plugin`. Only an administrator can do this.
 
-The minimum supported Jenkins version is 2.138.1 from 2018-09-12, but it is recommended to always run the latest Jenkins (LTS) version.
+The minimum supported Jenkins version is 2.150.1, but it is recommended to always run the latest Jenkins (LTS) version.
