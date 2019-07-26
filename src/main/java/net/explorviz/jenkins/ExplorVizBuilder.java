@@ -47,7 +47,7 @@ public class ExplorVizBuilder extends Builder implements SimpleBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Run ExplorViz instrumentation";
+            return "ExplorViz: Run ExplorViz instrumentation";
         }
 
         public FormValidation doCheckVersion(@QueryParameter String value) {

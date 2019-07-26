@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <!-- TODO: Support class path + main class as well as jar -->
+    <f:entry title="Application jar file" field="appJar">
+        <f:textbox default="" clazz="required"/>
+    </f:entry>
+    <f:entry title="Application arguments" field="appArgs">
+        <f:textbox default=""/>
+    </f:entry>
+    <f:entry title="AspectJ weaver configuration" field="aopXml">
+        <f:textbox default="META-INF/aop.xml" clazz="required"/>
+    </f:entry>
+    <f:entry title="Additional VM options" field="vmOpts">
+        <f:textbox default=""/>
+    </f:entry>
+    <f:entry title="Kieker jar file" field="kiekerJar">
+        <f:textbox default=""/>
+    </f:entry>
+    <f:entry title="Fail build if no records were collected" field="failBuildOnEmpty">
+        <f:checkbox default="true"/>
+    </f:entry>
+    <!-- TODO: Timeout/script options -->
+</j:jelly>
