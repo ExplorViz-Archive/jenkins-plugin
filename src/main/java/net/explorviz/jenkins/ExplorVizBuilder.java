@@ -17,6 +17,7 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 
+@SuppressWarnings("unused")
 public class ExplorVizBuilder extends Builder implements SimpleBuildStep {
     private final String version;
 
@@ -36,7 +37,7 @@ public class ExplorVizBuilder extends Builder implements SimpleBuildStep {
             .cmds("/bin/sh", "-c", "echo Running ExplorViz " + getVersion()).join();
     }
 
-    @Symbol("sayHello")
+    @Symbol("explorviz")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @Override

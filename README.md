@@ -18,8 +18,18 @@ A `Jenkinsfile` is included to build this plugin on Jenkins CI with several JDK 
 * In `Global Tool Configuration` you need to configure a JDK 8 installation with the name `jdk8` and a JDK 11 installation with the name `jdk11`.
 * You also need a Maven 3 installation with the name `mvn`.
 
-## Running
+## Installing
 
-Install the `explorviz-plugin.hpi` file in Jenkins under `Manage Jenkins -> Manage Plugins -> Advanced -> Upload Plugin`. Only an administrator can do this.
+To debug and test the plugin when developing, run `mvn hpi:run`.
+A local jenkins instance will be started on port `8080` with the plugin installed.
+See the jenkins plugin development documentation for more information.
+
+To run the plugin in production, install the `explorviz-plugin.hpi` file in Jenkins under `Manage Jenkins -> Manage Plugins -> Advanced -> Upload Plugin`. Only an administrator can do this.
 
 The minimum supported Jenkins version is 2.150.1, but it is recommended to always run the latest Jenkins (LTS) version.
+
+## Running
+
+In FreeStyle-/Maven-type projects, simply add the `Run ExplorViz instrumentation` build step and configure it as you wish.
+
+For pipeline-based project types, use the command `explorviz()` in your pipeline definition.
