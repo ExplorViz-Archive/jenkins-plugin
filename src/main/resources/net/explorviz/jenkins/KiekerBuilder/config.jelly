@@ -11,14 +11,19 @@
     <f:entry title="AspectJ weaver configuration" field="aopXml">
         <f:textbox default="META-INF/aop.xml" clazz="required"/>
     </f:entry>
+    <f:entry title="Skip default AOP configuration" field="skipDefaultAOP">
+        <f:checkbox default="false"/>
+    </f:entry>
+    <!-- TODO: Select JDK -->
     <f:entry title="Additional VM options" field="vmOpts">
         <f:textbox default=""/>
     </f:entry>
     <f:entry title="Kieker jar file" field="kiekerJar">
         <f:textbox default=""/>
     </f:entry>
-    <f:entry title="Fail build if no records were collected" field="failBuildOnEmpty">
+    <f:entry title="Fail build if no records were collected" field="failOnEmpty">
         <f:checkbox default="true"/>
     </f:entry>
-    <!-- TODO: Timeout/script options -->
+    <!-- TODO: Timeout/JMeter options -->
+    <!-- TODO: Kieker Monitoring configuration properties override -->
 </j:jelly>
