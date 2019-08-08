@@ -1,6 +1,6 @@
 # jenkins-plugin
 
-Run ExplorViz as a build step or pipeline stage in Jenkins CI.
+Use ExplorViz from within Jenkins CI.
 
 ## Building
 
@@ -26,10 +26,4 @@ See the jenkins plugin development documentation for more information.
 
 To run the plugin in production, install the `explorviz-plugin.hpi` file in Jenkins under `Manage Jenkins -> Manage Plugins -> Advanced -> Upload Plugin`. Only an administrator can do this.
 
-The minimum supported Jenkins version is 2.150.1, but it is recommended to always run the latest Jenkins (LTS) version.
-
-## Running
-
-In FreeStyle-/Maven-type projects, simply add the `Run ExplorViz instrumentation` build step and configure it as you wish.
-
-For pipeline-based project types, use the command `explorviz()` in your pipeline definition.
+The minimum supported Jenkins version is 2.150.3, but it is recommended to always run the latest Jenkins (LTS) version.
