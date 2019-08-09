@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    Live trace visualization with ExplorViz as a build step
+    Live trace visualization of application runtime behavior using ExplorViz
 </div>
