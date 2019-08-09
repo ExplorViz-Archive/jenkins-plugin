@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
 public class KiekerBuilder extends Builder implements SimpleBuildStep {
@@ -39,7 +40,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         // Must match defaults in KiekerBuilder/config.jelly
         this.appJar = appJar;
         this.appArgs = "";
-        this.skipDefaultAOP = false;
+        this.skipDefaultAOP = true;
         this.aopXml = aopXml;
         this.vmOpts = "";
         this.kiekerJar = "";
@@ -135,9 +136,12 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
 
         Proc kiekerProc = launcher.launch().stdout(listener).pwd(workspace).cmds(argList).start();
-        if (kiekerProc.join() != 0) {
+        // TODO: Configurable timeout, don't fail build when hitting timeout
+        if (kiekerProc.joinWithTimeout(60, TimeUnit.SECONDS, listener) != 0) {
             run.setResult(Result.FAILURE);
         }
+
+        // TODO: Use Kieker, count recorded files, fail Build if no records collected
     }
 
     @SuppressWarnings("MethodMayBeStatic")
