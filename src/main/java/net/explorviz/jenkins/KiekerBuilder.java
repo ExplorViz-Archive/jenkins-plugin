@@ -9,15 +9,20 @@ import hudson.util.FormValidation;
 import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import kieker.analysis.source.file.MapFileFilter;
+import kieker.common.util.filesystem.FSUtil;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
@@ -141,7 +146,25 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             run.setResult(Result.FAILURE);
         }
 
-        // TODO: Use Kieker, count recorded files, fail Build if no records collected
+        Optional<FilePath> recordDir = workingDirectory.listDirectories().stream().filter(KiekerBuilder::isKiekerDirectory).findFirst();
+        if (recordDir.isPresent()) {
+            listener.getLogger().println("Kieker records were saved to: " + recordDir.get().getRemote());
+        } else {
+            if (failBuildOnEmpty) {
+                listener.error("No kieker records have been written. Failing build as a result.");
+                run.setResult(Result.FAILURE);
+            } else {
+                listener.getLogger().println("No kieker records have been written.");
+            }
+        }
+    }
+
+    private static boolean isKiekerDirectory(FilePath path) {
+        try {
+            return !path.list(pathname -> pathname.getName().endsWith(FSUtil.MAP_FILE_EXTENSION)).isEmpty();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings("MethodMayBeStatic")
