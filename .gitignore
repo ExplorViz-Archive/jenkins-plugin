@@ -11,6 +11,7 @@
 # Java
 *.class
 *.jar
+!/src/main/resources/*.jar
 *.war
 *.nar
 *.ear

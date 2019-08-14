@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="ExplorViz">
+        <l:main-panel>
+            <p>
+                Kieker records saved in: ${it.kiekerLogFolderName}
+            </p>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
+

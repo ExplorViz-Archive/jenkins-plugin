@@ -16,6 +16,8 @@ import java.util.Properties;
  * Can be used to generate such a file dynamically.
  * <p>
  * Backed by a {@link Properties} implementation that can be accessed directly using {@link #getProperties()}.
+ *
+ * TODO: Replace with kieker.common.configuration.Configuration or use as backend.
  */
 public final class KiekerMonitoringConfiguration implements Serializable {
     private static final long serialVersionUID = -4029425118671759708L;

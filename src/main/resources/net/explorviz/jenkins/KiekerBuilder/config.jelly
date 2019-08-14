@@ -3,10 +3,10 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <!-- TODO: Support class path + main class as well as jar -->
     <f:entry title="Application jar file" field="appJar">
-        <f:textbox default="" clazz="required"/>
+        <f:textbox clazz="required"/>
     </f:entry>
-    <f:entry title="Application arguments" field="appArgs">
-        <f:textbox default=""/>
+    <f:entry title="Application arguments">
+        <f:expandableTextbox field="appArgs"/>
     </f:entry>
     <f:entry title="AspectJ weaver configuration" field="aopXml">
         <f:textbox default="META-INF/aop.xml" clazz="required"/>
@@ -14,16 +14,34 @@
     <f:entry title="Skip default AOP configuration" field="skipDefaultAOP">
         <f:checkbox default="true"/>
     </f:entry>
-    <!-- TODO: Select JDK -->
-    <f:entry title="Additional VM options" field="vmOpts">
-        <f:textbox default=""/>
-    </f:entry>
-    <f:entry title="Kieker jar file" field="kiekerJar">
-        <f:textbox default=""/>
-    </f:entry>
+
+    <!-- TODO: JDK selection -->
+    <!-- <j:if test="${!empty(descriptor.jdks)}">
+        <f:entry title="JDK Installation">
+            <select class="setting-input" name="jdkName">
+                <option value="(Default)">(Default))</option>
+                <j:forEach var="inst" items="${descriptor.jdks}">
+                    <f:option selected="${inst.name==instance.maven.name}" value="${inst.name}">${inst.name}</f:option>
+                </j:forEach>
+            </select>
+        </f:entry>
+    </j:if> -->
+
     <f:entry title="Fail build if no records were collected" field="failOnEmpty">
         <f:checkbox default="true"/>
     </f:entry>
+
     <!-- TODO: Timeout/JMeter options -->
-    <!-- TODO: Kieker Monitoring configuration properties override -->
+
+    <f:advanced>
+        <f:entry title="Kieker jar file" field="kiekerJar">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Additional VM options">
+            <f:expandableTextbox field="vmOpts"/>
+        </f:entry>
+        <f:entry title="Kieker configuration overrides" field="kiekerProperties" >
+            <f:textarea/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>

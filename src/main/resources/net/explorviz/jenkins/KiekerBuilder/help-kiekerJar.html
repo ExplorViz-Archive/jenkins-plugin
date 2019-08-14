@@ -1,12 +1,13 @@
 <div>
     <p>
-        Path to the kieker jar used for the instrumentation, relative to the workspace directory.
-        Make sure this file exists at the time of this build step, i.e. by shipping it in your repository.
+        Path to the kieker jar used as <code>javaagent</code> for the instrumentation, relative to the workspace
+        directory. Make sure this file exists at the time of this build step, i.e. by shipping it in your repository.
     </p>
     <p>
-        <strong>Note:</strong> Only aspectj variants are supported for now.
+        <strong>Note:</strong> Only aspectj variants are supported for now. Also make sure the version you're trying to
+        use is recent enough to have the <code>kieker.monitoring.writer.filesystem.FileWriter</code> writer.
     </p>
     <p>
-        Leave empty to use the bundled Kieker 1.14-aspectj nightly.
+        Leave empty to use the bundled Kieker <code>1.14-SNAPSHOT-aspectj</code>.
     </p>
 </div>
