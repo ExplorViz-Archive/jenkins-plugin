@@ -7,10 +7,11 @@ import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.QuotedStringTokenizer;
-import jenkins.FilePathFilter;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import kieker.common.util.filesystem.FSUtil;
+import net.explorviz.jenkins.kiekerConfiguration.AbstractKiekerConfiguration;
+import net.explorviz.jenkins.kiekerConfiguration.FileWriterConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -19,10 +20,9 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("unused")
@@ -48,7 +48,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     // Optional arguments listed under "Advanced"
     private String vmOpts;
     private String kiekerJar;
-    private String kiekerProperties;
+    private String kiekerOverrides;
 
     @DataBoundConstructor
     public KiekerBuilder(String appJar, String aopXml) {
@@ -62,7 +62,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
 
         this.vmOpts = null;
         this.kiekerJar = null;
-        this.kiekerProperties = null;
+        this.kiekerOverrides = null;
     }
 
     public String getAppJar() {
@@ -74,7 +74,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setAppArgs(String appArgs) {
+    public void setAppArgs(@Nullable String appArgs) {
         this.appArgs = appArgs;
     }
 
@@ -96,7 +96,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setVmOpts(String vmOpts) {
+    public void setVmOpts(@Nullable String vmOpts) {
         this.vmOpts = vmOpts;
     }
 
@@ -105,17 +105,17 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setKiekerJar(String kiekerJar) {
+    public void setKiekerJar(@Nullable String kiekerJar) {
         this.kiekerJar = kiekerJar;
     }
 
-    public String getKiekerProperties() {
-        return kiekerProperties;
+    public String getKiekerOverrides() {
+        return kiekerOverrides;
     }
 
     @DataBoundSetter
-    public void setKiekerProperties(String kiekerProperties) {
-        this.kiekerProperties = kiekerProperties;
+    public void setKiekerOverrides(@Nullable String kiekerOverrides) {
+        this.kiekerOverrides = kiekerOverrides;
     }
 
     public boolean isFailBuildOnEmpty() {
@@ -181,7 +181,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         if (Util.fixEmptyAndTrim(aopXml) == null || !workspace.child(aopXml).exists()) {
             // We do not abort the build here, because the aspectj file might be optional in some situations
             // (although UI will always claim it is required)
-            listener.error("No AspectJ weaving configuration file given or does not exist!");
+            listener.error("No AspectJ weaving configuration file specified or does not exist!");
         } else {
             // AspectJ will silently stop working when using absolute paths, hence we can not use FilePaths here
             args.add(ARG_ASPECTJ_WEAVER_CONFIGURATION + aopXml);
@@ -190,10 +190,13 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         /*
          * Kieker monitoring configuration
          */
-        KiekerMonitoringConfiguration monitoringConfiguration = new KiekerMonitoringConfiguration();
+        FileWriterConfiguration monitoringConfiguration = new FileWriterConfiguration();
         monitoringConfiguration.setApplicationName(run.getParent().getFullDisplayName() + "_" + run.getId());
-        monitoringConfiguration.setOutputDirectory(workingDirectory.getRemote());
-        // TODO: Implement kieker configuration overrides
+        monitoringConfiguration.setStoragePath(workingDirectory.getRemote());
+
+        if (Util.fixEmptyAndTrim(kiekerOverrides) != null) {
+            monitoringConfiguration.getConfiguration().load(new StringReader(kiekerOverrides));
+        }
 
         FilePath monitoringConfigurationFile = workingDirectory.child("kieker.monitoring.configuration");
         monitoringConfiguration.write(monitoringConfigurationFile);
@@ -211,8 +214,8 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             args.add(QuotedStringTokenizer.tokenize(vmOpts));
         }
 
-        if (!workspace.child(appJar).exists()) {
-            listener.error("Specified application jar file '%s' does not exist! Failing build.", appJar);
+        if (Util.fixEmptyAndTrim(appJar) == null || !workspace.child(appJar).exists()) {
+            listener.error("No application jar file specified or does not exist! Failing build.");
             run.setResult(Result.FAILURE);
             return;
         }
@@ -229,7 +232,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         Proc kiekerProc = launcher.launch().stdout(listener).pwd(workspace).cmds(args).start();
         // TODO: Configurable test time, don't fail build when hitting timeout
         if (kiekerProc.joinWithTimeout(60, TimeUnit.SECONDS, listener) != 0) {
-            run.setResult(Result.FAILURE);
+            listener.getLogger().println("Killed application after reaching timeout");
         }
 
         /*
@@ -320,9 +323,29 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             return FormValidationHelper.validateFilePath(project.getSomeWorkspace(), value, false);
         }
 
-        public FormValidation doCheckKiekerProperties(@QueryParameter String value) {
-            // TODO: Warn if a line does not start with "kieker.monitoring"
-            return FormValidation.ok();
+        public FormValidation doCheckKiekerOverrides(@QueryParameter String value) {
+            Properties properties = new Properties();
+            try {
+                properties.load(new StringReader(value));
+            } catch (IOException e) {
+                return FormValidation.error(e, "Could not read properties");
+            }
+
+            Collection<FormValidation> warnings = new HashSet<>(0);
+            for (String key : properties.stringPropertyNames()) {
+                if (!key.startsWith("kieker.monitoring.")) {
+                    warnings.add(FormValidation.warning("Property '%s' does not start with 'kieker.monitoring.'", key));
+                }
+
+                if (key.equalsIgnoreCase(AbstractKiekerConfiguration.PROP_WRITER)
+                    || key.equalsIgnoreCase(FileWriterConfiguration.PROP_STORAGE_PATH)) {
+                    warnings.add(
+                        FormValidation.error("Overriding '%s' is not supported and will most likely break the plugin!",
+                            AbstractKiekerConfiguration.PROP_WRITER));
+                }
+            }
+
+            return FormValidation.aggregate(warnings);
         }
     }
 }

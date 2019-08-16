@@ -40,7 +40,7 @@
         <f:entry title="Additional VM options">
             <f:expandableTextbox field="vmOpts"/>
         </f:entry>
-        <f:entry title="Kieker configuration overrides" field="kiekerProperties" >
+        <f:entry title="Kieker configuration overrides" field="kiekerOverrides" >
             <f:textarea/>
         </f:entry>
     </f:advanced>

@@ -94,5 +94,7 @@
             <artifactId>teetime</artifactId>
             <version>3.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- Also used through transitive dependencies: Apache Commons Lang, Apache Commons IO -->
     </dependencies>
 </project>
