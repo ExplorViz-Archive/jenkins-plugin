@@ -1,0 +1,16 @@
+<div>
+    <p>
+        Specifies properties to override the automatically generated values for the kieker monitoring configuration,
+        in the java properties syntax:
+    </p>
+    <pre># comment
+name1=value1
+name2=value2
+</pre>
+    <p>
+        Not all properties can be overriden when proper function of the plugin should be maintained.
+        Most importantly, when overriding <code>kieker.monitoring.writer</code> and
+        <code>kieker.monitoring.writer.filesystem.FileWriter.customStoragePath</code> the plugin will no longer be able
+        to find the records.
+    </p>
+</div>
