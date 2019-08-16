@@ -15,12 +15,13 @@ public class ExplorVizAction implements Action {
 
     @Override
     public String getIconFileName() {
+        // TODO: Guess the correct path, since documentation won't tell us
         return "explorviz.png";
     }
 
     @Override
     public String getDisplayName() {
-        return "ExplorViz";
+        return "Visualize in ExplorViz";
     }
 
     @Override
