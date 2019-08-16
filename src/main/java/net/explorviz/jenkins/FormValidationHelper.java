@@ -28,12 +28,14 @@ public final class FormValidationHelper {
      */
     public static FormValidation validateFilePath(@Nullable FilePath workspace, @Nullable String filepath,
                                                   boolean required) {
-        filepath = Util.fixEmptyAndTrim(filepath);
-
-        if (filepath == null && required) {
-            return FormValidation.error(Messages.FormValidation_ValidateRequired());
+        if (required) {
+            FormValidation validateRequired = FormValidation.validateRequired(filepath);
+            if (validateRequired.kind != FormValidation.Kind.OK) {
+                return validateRequired;
+            }
         }
 
+        filepath = Util.fixEmptyAndTrim(filepath);
         // Workspace can be null for projects that haven't been built yet
         if (filepath != null && workspace != null) {
             FilePath child = workspace.child(filepath);
