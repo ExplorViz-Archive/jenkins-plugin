@@ -1,18 +1,30 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="Instrumentation ID" field="runId">
+        <f:textbox clazz="required"/>
+    </f:entry>
+    <f:entry title="Instrumentation name" field="runName">
+        <f:textbox/>
+    </f:entry>
+
     <!-- TODO: Support class path + main class as well as jar -->
     <f:entry title="Application jar file" field="appJar">
         <f:textbox clazz="required"/>
     </f:entry>
-    <f:entry title="Application arguments" help="/descriptor/net.explorviz.jenkins.KiekerBuilder/help/appArgs">
-        <f:expandableTextbox field="appArgs"/>
+    <f:entry title="Application arguments" field="appArgs">
+        <f:expandableTextbox/>
     </f:entry>
     <f:entry title="AspectJ weaver configuration" field="aopXml">
         <f:textbox default="META-INF/aop.xml" clazz="required"/>
     </f:entry>
     <f:entry title="Skip default AOP configuration" field="skipDefaultAOP">
         <f:checkbox default="true"/>
+    </f:entry>
+
+    <!-- TODO: JMeter/Shell command options -->
+    <f:entry title="Instrumentation duration" field="executeDuration">
+        <f:number default="60" clazz="required positive-number"/>
     </f:entry>
 
     <!-- TODO: JDK selection -->
@@ -31,14 +43,12 @@
         <f:checkbox default="true"/>
     </f:entry>
 
-    <!-- TODO: Timeout/JMeter options -->
-
     <f:advanced>
         <f:entry title="Kieker jar file" field="kiekerJar">
             <f:textbox/>
         </f:entry>
-        <f:entry title="Additional VM options" help="/descriptor/net.explorviz.jenkins.KiekerBuilder/help/vmOpts">
-            <f:expandableTextbox field="vmOpts"/>
+        <f:entry title="Additional VM options" field="vmOpts">
+            <f:expandableTextbox/>
         </f:entry>
         <f:entry title="Kieker configuration overrides" field="kiekerOverrides" >
             <f:textarea/>

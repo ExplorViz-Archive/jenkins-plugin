@@ -19,11 +19,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class KiekerBuilder extends Builder implements SimpleBuildStep {
@@ -37,10 +39,13 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     private static final String BUILTIN_KIEKER_JAR = "kieker-1.14-SNAPSHOT-aspectj.jar";
 
     // Required arguments
+    private final String runId;
     private final String appJar;
     private final String aopXml;
+    private final int executeDuration;
 
     // Optional arguments
+    private String runName;
     private String appArgs;
     private boolean skipDefaultAOP;
     private boolean failBuildOnEmpty;
@@ -51,9 +56,12 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     private String kiekerOverrides;
 
     @DataBoundConstructor
-    public KiekerBuilder(String appJar, String aopXml) {
+    public KiekerBuilder(@Nonnull String runId, @Nonnull String appJar, @Nonnull String aopXml,
+                         @Nonnegative int executeDuration) {
+        this.runId = runId;
         this.appJar = appJar;
         this.aopXml = aopXml;
+        this.executeDuration = executeDuration;
 
         // Must match defaults in KiekerBuilder/config.jelly
         this.appArgs = null;
@@ -65,8 +73,25 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         this.kiekerOverrides = null;
     }
 
+    public String getRunId() {
+        return runId;
+    }
+
     public String getAppJar() {
         return appJar;
+    }
+
+    public int getExecuteDuration() {
+        return executeDuration;
+    }
+
+    public String getRunName() {
+        return runName;
+    }
+
+    @DataBoundSetter
+    public void setRunName(@Nullable String runName) {
+        this.runName = runName;
     }
 
     public String getAppArgs() {
@@ -130,11 +155,25 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
                         @Nonnull TaskListener listener) throws InterruptedException, IOException {
+        if (Util.fixEmptyAndTrim(runId) == null) {
+            listener.fatalError("Instrumentation ID is required! Failing build.");
+            run.setResult(Result.FAILURE);
+            return;
+        }
+
         /*
-         * We create a temporary directory with the prefix "kieker" that will contain all the files that we need to
-         * operate, as well as the record logs.
+         * We create a working directory with the prefix "kieker" and the run id that will contain all the files that
+         * we need to operate, as well as the record logs.
          */
-        FilePath workingDirectory = workspace.createTempDir("kieker", null);
+        FilePath workingDirectory = workspace.child("kieker." + runId);
+        if (workingDirectory.exists()) {
+            listener.fatalError(
+                "Instrumentation with ID '%s' already exists in workspace! Not overriding implicitly, failing build.",
+                runId);
+            run.setResult(Result.FAILURE);
+            return;
+        }
+        workingDirectory.mkdirs();
 
         ArgumentListBuilder args = new ArgumentListBuilder();
 
@@ -191,7 +230,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
          * Kieker monitoring configuration
          */
         FileWriterConfiguration monitoringConfiguration = new FileWriterConfiguration();
-        monitoringConfiguration.setApplicationName(run.getParent().getFullDisplayName() + "_" + run.getId());
+        monitoringConfiguration.setApplicationName(run.getParent().getName() + "_" + run.getId() + "_" + runId);
         monitoringConfiguration.setStoragePath(workingDirectory.getRemote());
 
         if (Util.fixEmptyAndTrim(kiekerOverrides) != null) {
@@ -230,9 +269,8 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
          * Start run with kieker
          */
         Proc kiekerProc = launcher.launch().stdout(listener).pwd(workspace).cmds(args).start();
-        // TODO: Configurable test time, don't fail build when hitting timeout
         if (kiekerProc.joinWithTimeout(60, TimeUnit.SECONDS, listener) != 0) {
-            listener.getLogger().println("Killed application after reaching timeout");
+            listener.getLogger().println("Killed application after reaching instrumentation duration");
         }
 
         /*
@@ -243,7 +281,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         if (recordDir.isPresent()) {
             listener.getLogger().println("Kieker records were saved to: " + recordDir.get().getRemote());
             // TODO: Archive as artifacts: run.getArtifactManager().archive(recordDir.get(), launcher, listener, map);
-            run.addAction(new ExplorVizAction(recordDir.get().getName()));
+            run.addAction(new ExplorVizAction(runId, runName, recordDir.get().getName()));
         } else {
             if (failBuildOnEmpty) {
                 listener.error("No kieker records have been written. Failing build as a result.");
@@ -278,15 +316,24 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     @Symbol("kieker")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+        private static final Pattern RUN_ID_PATTERN = Pattern.compile("[a-z0-9_\\-]{1,64}");
+
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // TODO: Only allow one single Kieker build step for now
             return true;
         }
 
         @Override
         public String getDisplayName() {
             return "ExplorViz: Run Kieker instrumentation";
+        }
+
+        public FormValidation doCheckRunId(@QueryParameter String value) {
+            return FormValidationHelper.validateString(value, RUN_ID_PATTERN, true);
+        }
+
+        public FormValidation doCheckRunName(@QueryParameter String value) {
+            return FormValidation.ok();
         }
 
         public FormValidation doCheckAppJar(@QueryParameter String value, @AncestorInPath AbstractProject project) {
@@ -299,6 +346,14 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
 
         public FormValidation doCheckAopXml(@QueryParameter String value, @AncestorInPath AbstractProject project) {
             return FormValidationHelper.validateFilePath(project.getSomeWorkspace(), value, true);
+        }
+
+        public FormValidation doCheckExecuteDuration(@QueryParameter int value) {
+            if (value <= 0) {
+                return FormValidation.error("Duration must be a positive number!");
+            }
+
+            return FormValidation.ok();
         }
 
         public FormValidation doCheckVmOpts(@QueryParameter String value) {

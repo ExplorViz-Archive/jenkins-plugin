@@ -1,12 +1,32 @@
 package net.explorviz.jenkins;
 
+import hudson.Util;
 import hudson.model.Action;
 
+import javax.annotation.Nonnull;
+
 public class ExplorVizAction implements Action {
+    private final String runId;
+    private final String runName;
     private final String kiekerLogFolderName;
 
-    public ExplorVizAction(String kiekerLogFolderName) {
+    /**
+     * @param runId An alphanumerical identifier for this instrumentation, unique within a single build
+     * @param runName A display name for this instrumentation, to be read by humans. May be {@code null} to only show "ExplorViz".
+     * @param kiekerLogFolderName The folder name where kieker records have been saved to
+     */
+    public ExplorVizAction(String runId, String runName, @Nonnull String kiekerLogFolderName) {
+        this.runId = runId;
+        this.runName = Util.fixEmptyAndTrim(runName);
         this.kiekerLogFolderName = kiekerLogFolderName;
+    }
+
+    public String getRunId() {
+        return runId;
+    }
+
+    public String getRunName() {
+        return runName;
     }
 
     public String getKiekerLogFolderName() {
@@ -20,11 +40,15 @@ public class ExplorVizAction implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Visualize in ExplorViz";
+        if (runName == null) {
+            return "ExplorViz";
+        } else {
+            return "ExplorViz: " + runName;
+        }
     }
 
     @Override
     public String getUrlName() {
-        return "explorviz";
+        return "explorviz/" + runId;
     }
 }
