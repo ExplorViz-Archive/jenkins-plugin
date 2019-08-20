@@ -25,10 +25,12 @@ public abstract class AbstractKiekerConfiguration implements KiekerConfiguration
 
     private static final String BASE_RESOURCE_NAME = "kieker.monitoring.properties";
 
-    public static final String PROP_WRITER = "kieker.monitoring.writer";
+    public static final String PROPS_PREFIX = "kieker.monitoring.";
 
-    private static final String PROP_APPLICATIONNAME = "kieker.monitoring.applicationName"; // default: empty
-    private static final String PROP_AUTO_TIMESTAMPS = "kieker.monitoring.setLoggingTimestamp"; // default: true
+    public static final String PROP_WRITER = PROPS_PREFIX + "writer";
+
+    private static final String PROP_APPLICATIONNAME = PROPS_PREFIX + "applicationName"; // default: empty
+    private static final String PROP_AUTO_TIMESTAMPS = PROPS_PREFIX + "setLoggingTimestamp"; // default: true
 
     protected final Configuration configuration;
 

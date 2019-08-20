@@ -5,7 +5,7 @@
     <f:entry title="Application jar file" field="appJar">
         <f:textbox clazz="required"/>
     </f:entry>
-    <f:entry title="Application arguments">
+    <f:entry title="Application arguments" help="/descriptor/net.explorviz.jenkins.KiekerBuilder/help/appArgs">
         <f:expandableTextbox field="appArgs"/>
     </f:entry>
     <f:entry title="AspectJ weaver configuration" field="aopXml">
@@ -27,7 +27,7 @@
         </f:entry>
     </j:if> -->
 
-    <f:entry title="Fail build if no records were collected" field="failOnEmpty">
+    <f:entry title="Fail build if nothing recorded" field="failOnEmpty">
         <f:checkbox default="true"/>
     </f:entry>
 
@@ -37,7 +37,7 @@
         <f:entry title="Kieker jar file" field="kiekerJar">
             <f:textbox/>
         </f:entry>
-        <f:entry title="Additional VM options">
+        <f:entry title="Additional VM options" help="/descriptor/net.explorviz.jenkins.KiekerBuilder/help/vmOpts">
             <f:expandableTextbox field="vmOpts"/>
         </f:entry>
         <f:entry title="Kieker configuration overrides" field="kiekerOverrides" >

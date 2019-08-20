@@ -256,13 +256,21 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
 
     private static boolean isKiekerDirectory(FilePath path) {
         try {
-            return !path
-                // The FileFilter is possibly run on a remote agent and needs to be Serializable;
-                // this trick convinces javac to make the lambda implement Serializable
-                .list((FileFilter & Serializable) pathname -> pathname.getName().endsWith(FSUtil.MAP_FILE_EXTENSION))
-                .isEmpty();
+            return !path.list(new KiekerDirectoryFilter()).isEmpty();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /*
+     * The FileFilter is possibly run on a remote agent and therefore needs to be Serializable
+     */
+    private static class KiekerDirectoryFilter implements FileFilter, Serializable {
+        private static final long serialVersionUID = -5474218848206939281L;
+
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.getName().endsWith(FSUtil.MAP_FILE_EXTENSION);
         }
     }
 
@@ -333,15 +341,20 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
 
             Collection<FormValidation> warnings = new HashSet<>(0);
             for (String key : properties.stringPropertyNames()) {
-                if (!key.startsWith("kieker.monitoring.")) {
-                    warnings.add(FormValidation.warning("Property '%s' does not start with 'kieker.monitoring.'", key));
+                if (!key.startsWith(AbstractKiekerConfiguration.PROPS_PREFIX)) {
+                    warnings.add(FormValidation
+                        .warning("Property '%s' does not start with '%s'. It will likely have no effect.", key,
+                            AbstractKiekerConfiguration.PROPS_PREFIX));
                 }
-
-                if (key.equalsIgnoreCase(AbstractKiekerConfiguration.PROP_WRITER)
-                    || key.equalsIgnoreCase(FileWriterConfiguration.PROP_STORAGE_PATH)) {
+                if (key.equalsIgnoreCase(AbstractKiekerConfiguration.PROP_WRITER)) {
                     warnings.add(
                         FormValidation.error("Overriding '%s' is not supported and will most likely break the plugin!",
                             AbstractKiekerConfiguration.PROP_WRITER));
+                }
+                if (key.equalsIgnoreCase(FileWriterConfiguration.PROP_STORAGE_PATH)) {
+                    warnings.add(
+                        FormValidation.error("Overriding '%s' is not supported and will most likely break the plugin!",
+                            FileWriterConfiguration.PROP_STORAGE_PATH));
                 }
             }
 

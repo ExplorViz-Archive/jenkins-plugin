@@ -16,10 +16,8 @@ public class SingleSocketTcpWriterConfiguration extends AbstractKiekerConfigurat
 
     private static final String WRITER_CLASS_TCP = "kieker.monitoring.writer.tcp.SingleSocketTcpWriter";
 
-    public static final String PROP_HOSTNAME =
-        "kieker.monitoring.writer.tcp.SingleSocketTcpWriter.hostname"; // default: localhost
-    public static final String PROP_PORT =
-        "kieker.monitoring.writer.tcp.SingleSocketTcpWriter.port"; // default: 10133
+    private static final String PROP_HOSTNAME = WRITER_CLASS_TCP + ".hostname"; // default: localhost
+    private static final String PROP_PORT = WRITER_CLASS_TCP + ".port"; // default: 10133
 
     public SingleSocketTcpWriterConfiguration() throws IOException {
         super(WRITER_CLASS_TCP);

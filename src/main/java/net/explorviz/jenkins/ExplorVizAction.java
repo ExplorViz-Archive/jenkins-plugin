@@ -15,8 +15,7 @@ public class ExplorVizAction implements Action {
 
     @Override
     public String getIconFileName() {
-        // TODO: Guess the correct path, since documentation won't tell us
-        return "explorviz.png";
+        return "/plugin/explorviz-plugin/images/24x24/explorviz.png";
     }
 
     @Override

@@ -18,8 +18,7 @@ public class FileWriterConfiguration extends AbstractKiekerConfiguration {
 
     private static final String WRITER_CLASS_FILE = "kieker.monitoring.writer.filesystem.FileWriter";
 
-    public static final String PROP_STORAGE_PATH =
-        "kieker.monitoring.writer.filesystem.FileWriter.customStoragePath"; // default: empty
+    public static final String PROP_STORAGE_PATH = WRITER_CLASS_FILE + ".customStoragePath"; // default: empty
 
     public FileWriterConfiguration() throws IOException {
         super(WRITER_CLASS_FILE);
