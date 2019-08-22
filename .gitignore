@@ -108,5 +108,4 @@ fabric.properties
 [._]sw[a-p]
 Session.vim
 .netrwhist
-*~
 [._]*.un~

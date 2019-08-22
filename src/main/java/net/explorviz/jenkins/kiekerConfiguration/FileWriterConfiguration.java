@@ -1,6 +1,5 @@
 package net.explorviz.jenkins.kiekerConfiguration;
 
-import hudson.Util;
 import org.apache.commons.lang.Validate;
 
 import javax.annotation.Nonnull;

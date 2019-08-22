@@ -3,7 +3,6 @@ package net.explorviz.jenkins;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.FormValidation;
-import hudson.util.Messages;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

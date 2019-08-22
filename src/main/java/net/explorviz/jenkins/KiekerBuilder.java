@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("unused")
 public class KiekerBuilder extends Builder implements SimpleBuildStep {
     private static final String ARG_JAVA_AGENT = "-javaagent:";
     private static final String ARG_JAR = "-jar";
@@ -269,8 +268,9 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
          * Start run with kieker
          */
         Proc kiekerProc = launcher.launch().stdout(listener).pwd(workspace).cmds(args).start();
-        if (kiekerProc.joinWithTimeout(60, TimeUnit.SECONDS, listener) != 0) {
-            listener.getLogger().println("Killed application after reaching instrumentation duration");
+        int exitCode = kiekerProc.joinWithTimeout(executeDuration, TimeUnit.SECONDS, listener);
+        if (exitCode != 0) {
+            listener.getLogger().println("Application exited with code " + exitCode);
         }
 
         /*
@@ -312,7 +312,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    @SuppressWarnings("MethodMayBeStatic")
+    @SuppressWarnings({ "MethodMayBeStatic", "rawtypes", "unused" })
     @Symbol("kieker")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {

@@ -18,11 +18,11 @@ import java.io.File;
  */
 public class ReplayConfiguration extends Configuration {
     public ReplayConfiguration(File[] directories, kieker.common.configuration.Configuration kiekerConfg) {
-        super();
+        super(/* TODO: Add a AbstractExceptionListenerFactory */);
 
-        final DirectoryScannerStage directoryScannerStage = new DirectoryScannerStage(directories);
-        final DirectoryReaderStage directoryReaderStage = new DirectoryReaderStage(kiekerConfg);
-        final DataSinkStage dataSinkStage = new DataSinkStage(kiekerConfg);
+        DirectoryScannerStage directoryScannerStage = new DirectoryScannerStage(directories);
+        DirectoryReaderStage directoryReaderStage = new DirectoryReaderStage(kiekerConfg);
+        DataSinkStage dataSinkStage = new DataSinkStage(kiekerConfg);
 
         this.connectPorts(directoryScannerStage.getOutputPort(), directoryReaderStage.getInputPort());
         this.connectPorts(directoryReaderStage.getOutputPort(), dataSinkStage.getInputPort());

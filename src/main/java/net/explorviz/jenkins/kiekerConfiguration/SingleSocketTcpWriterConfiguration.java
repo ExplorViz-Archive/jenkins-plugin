@@ -14,6 +14,8 @@ import java.io.IOException;
 public class SingleSocketTcpWriterConfiguration extends AbstractKiekerConfiguration {
     private static final long serialVersionUID = 5631963572612065232L;
 
+    private static final int PORT_MAX = 65535;
+
     private static final String WRITER_CLASS_TCP = "kieker.monitoring.writer.tcp.SingleSocketTcpWriter";
 
     private static final String PROP_HOSTNAME = WRITER_CLASS_TCP + ".hostname"; // default: localhost
@@ -33,7 +35,7 @@ public class SingleSocketTcpWriterConfiguration extends AbstractKiekerConfigurat
     }
 
     public void setPort(int port) {
-        Validate.isTrue(port > 0 && port <= 65535, "port must be in range (0,65535]");
+        Validate.isTrue(port > 0 && port <= PORT_MAX, "port must be in range (0," + PORT_MAX + "]");
         this.configuration.setProperty(PROP_PORT, port);
     }
 

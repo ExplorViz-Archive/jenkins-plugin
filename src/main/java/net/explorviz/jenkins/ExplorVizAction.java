@@ -11,8 +11,9 @@ public class ExplorVizAction implements Action {
     private final String kiekerLogFolderName;
 
     /**
-     * @param runId An alphanumerical identifier for this instrumentation, unique within a single build
-     * @param runName A display name for this instrumentation, to be read by humans. May be {@code null} to only show "ExplorViz".
+     * @param runId               An alphanumerical identifier for this instrumentation, unique within a single build
+     * @param runName             A display name for this instrumentation, to be read by humans. May be {@code null} to
+     *                            only show "ExplorViz".
      * @param kiekerLogFolderName The folder name where kieker records have been saved to
      */
     public ExplorVizAction(String runId, String runName, @Nonnull String kiekerLogFolderName) {
@@ -40,11 +41,7 @@ public class ExplorVizAction implements Action {
 
     @Override
     public String getDisplayName() {
-        if (runName == null) {
-            return "ExplorViz";
-        } else {
-            return "ExplorViz: " + runName;
-        }
+        return runName == null ? "ExplorViz" : ("ExplorViz: " + runName);
     }
 
     @Override

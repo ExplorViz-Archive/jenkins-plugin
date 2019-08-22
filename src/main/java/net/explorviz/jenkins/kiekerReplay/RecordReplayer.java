@@ -7,7 +7,7 @@ import java.io.File;
 
 public class RecordReplayer {
     private final ReplayConfiguration config;
-    private Execution<ReplayConfiguration> execution = null;
+    private Execution<ReplayConfiguration> execution;
 
     public RecordReplayer(File sourceDirectory, KiekerConfiguration kiekerConfig) {
         config = new ReplayConfiguration(new File[]{sourceDirectory}, kiekerConfig.readOnlyConfiguration());

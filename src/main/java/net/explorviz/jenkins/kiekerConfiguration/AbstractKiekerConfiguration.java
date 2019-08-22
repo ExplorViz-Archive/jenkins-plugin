@@ -18,7 +18,6 @@ import java.io.OutputStream;
  * Can be used to generate such a file dynamically.
  * <p>
  * Backed by a kieker {@link Configuration} that can be accessed directly using {@link #getConfiguration()}.
- * <p>
  */
 public abstract class AbstractKiekerConfiguration implements KiekerConfiguration {
     private static final long serialVersionUID = 1157219098873045113L;
@@ -72,6 +71,7 @@ public abstract class AbstractKiekerConfiguration implements KiekerConfiguration
         return this.configuration.getBooleanProperty(PROP_AUTO_TIMESTAMPS);
     }
 
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public Configuration getConfiguration() {
         return configuration;
     }
