@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.47</version>
+        <version>3.48</version>
         <relativePath />
     </parent>
 
@@ -46,8 +46,6 @@
         <findbugs.threshold>Low</findbugs.threshold>
         <findbugs.effort>Max</findbugs.effort>
     </properties>
-
-    <!-- TODO: Run Checkstyle and maybe PMD -->
 
     <licenses>
         <license>
@@ -98,4 +96,6 @@
 
         <!-- Also used through transitive dependencies: Apache Commons Lang, Apache Commons IO -->
     </dependencies>
+
+    <!-- TODO: Run Checkstyle and PMD, see warnings-ng-plugin/pom.xml -->
 </project>
