@@ -1,11 +1,16 @@
-package net.explorviz.jenkins;
+package net.explorviz.jenkins.model;
 
 import hudson.Util;
-import hudson.model.Action;
+import hudson.model.InvisibleAction;
 
 import javax.annotation.Nonnull;
 
-public class ExplorVizAction implements Action {
+/**
+ * Used to store the logged kieker records with the build. Not directly visible from the build.
+ * <p>
+ * These actions are instead loaded by {@link ExplorVizAction}.
+ */
+public class KiekerRecordAction extends InvisibleAction {
     private final String runId;
     private final String runName;
     private final String kiekerLogFolderName;
@@ -16,7 +21,7 @@ public class ExplorVizAction implements Action {
      *                            only show "ExplorViz".
      * @param kiekerLogFolderName The folder name where kieker records have been saved to
      */
-    public ExplorVizAction(String runId, String runName, @Nonnull String kiekerLogFolderName) {
+    public KiekerRecordAction(String runId, String runName, @Nonnull String kiekerLogFolderName) {
         this.runId = runId;
         this.runName = Util.fixEmptyAndTrim(runName);
         this.kiekerLogFolderName = kiekerLogFolderName;
@@ -32,20 +37,5 @@ public class ExplorVizAction implements Action {
 
     public String getKiekerLogFolderName() {
         return kiekerLogFolderName;
-    }
-
-    @Override
-    public String getIconFileName() {
-        return "/plugin/explorviz-plugin/images/24x24/explorviz.png";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return runName == null ? "ExplorViz" : ("ExplorViz: " + runName);
-    }
-
-    @Override
-    public String getUrlName() {
-        return "explorviz/" + runId;
     }
 }

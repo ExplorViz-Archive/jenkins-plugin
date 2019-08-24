@@ -3,7 +3,7 @@
     <l:layout title="ExplorViz">
         <l:main-panel>
             <p>
-                Kieker records saved in: ${it.kiekerLogFolderName}
+                Kieker records saved in: ${it.test}
             </p>
         </l:main-panel>
     </l:layout>

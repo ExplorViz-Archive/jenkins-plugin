@@ -12,6 +12,8 @@ import jenkins.tasks.SimpleBuildStep;
 import kieker.common.util.filesystem.FSUtil;
 import net.explorviz.jenkins.kiekerConfiguration.AbstractKiekerConfiguration;
 import net.explorviz.jenkins.kiekerConfiguration.FileWriterConfiguration;
+import net.explorviz.jenkins.model.ExplorVizAction;
+import net.explorviz.jenkins.model.KiekerRecordAction;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -280,8 +282,9 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             workingDirectory.listDirectories().stream().filter(KiekerBuilder::isKiekerDirectory).findFirst();
         if (recordDir.isPresent()) {
             listener.getLogger().println("Kieker records were saved to: " + recordDir.get().getRemote());
-            // TODO: Archive as artifacts: run.getArtifactManager().archive(recordDir.get(), launcher, listener, map);
-            run.addAction(new ExplorVizAction(runId, runName, recordDir.get().getName()));
+
+            maybeAddExplorVizAction(run);
+            run.addAction(new KiekerRecordAction(runId, runName, recordDir.get().getName()));
         } else {
             if (failBuildOnEmpty) {
                 listener.error("No kieker records have been written. Failing build as a result.");
@@ -297,6 +300,12 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             return !path.list(new KiekerDirectoryFilter()).isEmpty();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void maybeAddExplorVizAction(Run<?, ?> run) {
+        if (run.getActions(ExplorVizAction.class).isEmpty()) {
+            run.addAction(new ExplorVizAction());
         }
     }
 
