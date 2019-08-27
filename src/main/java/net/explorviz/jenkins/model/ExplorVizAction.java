@@ -2,6 +2,7 @@ package net.explorviz.jenkins.model;
 
 import hudson.model.Run;
 import jenkins.model.RunAction2;
+import net.explorviz.jenkins.Messages;
 import org.kohsuke.stapler.StaplerProxy;
 
 import javax.annotation.CheckForNull;
@@ -53,7 +54,7 @@ public class ExplorVizAction implements RunAction2, StaplerProxy {
 
     @Override
     public String getDisplayName() {
-        return "ExplorViz Visualization";
+        return Messages.ExplorVizAction_DisplayName();
     }
 
     @Override

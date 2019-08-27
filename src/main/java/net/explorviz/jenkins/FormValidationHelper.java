@@ -21,12 +21,12 @@ public final class FormValidationHelper {
      * Validate a given filepath form input. Makes sure a value is given (issuing an error otherwise, unless {@code
      * required} is {@code false}), and checks if the filepath points to an existing file, issuing a warning otherwise.
      *
-     * @param project   Project, whose workspace is used as base directory to check relative filepaths.
-     *                  The existence of the filepath is not validated if either this is {@code null} or
-     *                  if the project doesn't have a build yet (as no workspace exists yet).
-     * @param filepath  The filepath that is expected to exist
-     * @param required  {@code true} if absence of the {@code filepath} should be considered an error, {@code false}
-     *                  means the it is optional, but if specified, should still point to an existing file
+     * @param project  Project, whose workspace is used as base directory to check relative filepaths.
+     *                 The existence of the filepath is not validated if either this is {@code null} or
+     *                 if the project doesn't have a build yet (as no workspace exists yet).
+     * @param filepath The filepath that is expected to exist
+     * @param required {@code true} if absence of the {@code filepath} should be considered an error, {@code false}
+     *                 means the it is optional, but if specified, should still point to an existing file
      * @return {@link FormValidation}
      */
     public static FormValidation validateFilePath(@Nullable AbstractProject project, @Nullable String filepath,
@@ -55,14 +55,12 @@ public final class FormValidationHelper {
                 FilePath child = workspace.child(filepath);
                 try {
                     if (!child.exists()) {
-                        return FormValidation.warning("The given file path doesn't currently exist. " +
-                                "Make sure it is available when this build step is run.");
+                        return FormValidation.warning(Messages.FormValidationHelper_validateFilePath_doesNotExist());
                     } else if (child.isDirectory()) {
-                        return FormValidation.error("The given file path points to a directory. This is invalid.");
+                        return FormValidation.error(Messages.FormValidationHelper_validateFilePath_isDirectory());
                     }
                 } catch (IOException | InterruptedException e) {
-                    return FormValidation.error(e, "Error trying to validate this file path. " +
-                            "Make sure it is available when this build step is run.");
+                    return FormValidation.error(e, Messages.FormValidationHelper_validateFilePath_exception());
                 }
             }
         }
@@ -91,7 +89,7 @@ public final class FormValidationHelper {
         value = Util.fixEmptyAndTrim(value);
         if (value != null) {
             if (!pattern.matcher(value).matches()) {
-                return FormValidation.error("Given string does not match the required format! (See help)");
+                return FormValidation.error(Messages.FormValidationHelper_validateString_doesNotMatch());
             }
         }
 

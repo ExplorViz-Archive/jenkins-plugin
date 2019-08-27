@@ -35,7 +35,7 @@ To visualize builds with ExplorViz, the `Run Kieker instrumentation for ExplorVi
 This step can be used multiple times to instrument multiple applications/scenarios in one build.
 
 In FreeStyle-type projects, this build step can be added in the `Build` section.
-In Pipeline-based projects, use the `kieker` pipeline command. A full command-line, including the available parameters, 
+In Pipeline-based projects, use the `kieker` pipeline command. A full command-line, including the available parameters,
 can be generated using the Pipeline Snippet Generator integrated into Jenkins.
 
 When the instrumentation succeeds, a menu entry `ExplorViz Visualization` is added to the build's page.

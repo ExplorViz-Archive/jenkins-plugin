@@ -37,7 +37,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
     private static final String ARG_KIEKER_MONITORING_CONFIGURATION = "-Dkieker.monitoring.configuration=";
     private static final String ARG_ASPECTJ_WEAVER_CONFIGURATION = "-Dorg.aspectj.weaver.loadtime.configuration=";
     private static final String ARG_SKIP_DEFAULT_AOP_CONFIGURATION =
-        "-Dkieker.monitoring.skipDefaultAOPConfiguration=true";
+            "-Dkieker.monitoring.skipDefaultAOPConfiguration=true";
 
     private static final String BUILTIN_KIEKER_JAR = "kieker-1.14-SNAPSHOT-aspectj.jar";
 
@@ -156,6 +156,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         this.failBuildOnEmpty = failBuildOnEmpty;
     }
 
+    // TODO: Localize #perform
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
                         @Nonnull TaskListener listener) throws InterruptedException, IOException {
@@ -172,8 +173,9 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         FilePath workingDirectory = workspace.child("kieker." + runId);
         if (workingDirectory.exists()) {
             listener.fatalError(
-                "Instrumentation with ID '%s' already exists in workspace! Not overriding implicitly, failing build.",
-                runId);
+                    "Instrumentation with ID '%s' already exists in workspace! Not overriding implicitly, failing " +
+                            "build.",
+                    runId);
             run.setResult(Result.FAILURE);
             return;
         }
@@ -282,12 +284,13 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
          * Collect results
          */
         Optional<FilePath> recordDir =
-            workingDirectory.listDirectories().stream().filter(KiekerBuilder::isKiekerDirectory).findFirst();
+                workingDirectory.listDirectories().stream().filter(KiekerBuilder::isKiekerDirectory).findFirst();
         if (recordDir.isPresent()) {
             listener.getLogger().println("Kieker records were saved to: " + recordDir.get().getRemote());
 
             maybeAddExplorVizAction(run);
-            InstrumentationRecord record = new InstrumentationRecord(runId, runName, recordDir.get().getName(), exitCode);
+            InstrumentationRecord record =
+                    new InstrumentationRecord(runId, runName, recordDir.get().getName(), exitCode);
             run.addAction(new InstrumentationAction(record));
         } else {
             if (failBuildOnEmpty) {
@@ -337,8 +340,9 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
 
         @Override
+        @Nonnull
         public String getDisplayName() {
-            return "Run Kieker instrumentation for ExplorViz";
+            return Messages.KiekerBuilder_DescriptorImpl_DisplayName();
         }
 
         public FormValidation doCheckRunId(@QueryParameter String value) {
@@ -377,19 +381,19 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             Collection<FormValidation> warnings = new HashSet<>(0);
 
             if (value.contains(ARG_JAVA_AGENT)) {
-                warnings.add(
-                    FormValidation.warning("Do not specify %s! It is set to kieker automatically.", ARG_JAVA_AGENT));
+                warnings.add(FormValidation.warning(
+                        Messages.KiekerBuilder_DescriptorImpl_doNotSpecify_generic(ARG_JAVA_AGENT)));
             }
             if (value.contains(ARG_JAR)) {
-                warnings.add(FormValidation.warning("Do not specify %s! It is set automatically.", ARG_JAR));
+                warnings.add(FormValidation.warning(
+                        Messages.KiekerBuilder_DescriptorImpl_doNotSpecify_generic(ARG_JAR)));
             }
             if (value.contains(ARG_KIEKER_MONITORING_CONFIGURATION)) {
-                warnings.add(FormValidation.error("Do not specify the kieker monitoring configuration! " +
-                    "It is auto-generated and other configurations won't work."));
+                warnings.add(FormValidation.error(Messages.KiekerBuilder_DescriptorImpl_doNotSpecify_kiekerConfig()));
             }
             if (value.contains(ARG_ASPECTJ_WEAVER_CONFIGURATION)) {
-                warnings.add(FormValidation.warning("Do not specify the AspectJ weaver configuration here! " +
-                    "Use the form input above instead."));
+                warnings.add(FormValidation.warning(
+                        Messages.KiekerBuilder_DescriptorImpl_doNotSpecify_aspectJConfig()));
             }
 
             return FormValidation.aggregate(warnings);
@@ -404,25 +408,19 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             try {
                 properties.load(new StringReader(value));
             } catch (IOException e) {
-                return FormValidation.error(e, "Could not read entered text as properties");
+                return FormValidation.error(e, Messages.KiekerBuilder_DescriptorImpl_properties_IOException());
             }
 
             Collection<FormValidation> warnings = new HashSet<>(0);
             for (String key : properties.stringPropertyNames()) {
                 if (!key.startsWith(AbstractKiekerConfiguration.PROPS_PREFIX)) {
-                    warnings.add(FormValidation
-                        .warning("Property '%s' does not start with '%s'. It will likely have no effect.", key,
-                            AbstractKiekerConfiguration.PROPS_PREFIX));
+                    warnings.add(FormValidation.warning(Messages.KiekerBuilder_DescriptorImpl_properties_unknownPrefix(
+                            key, AbstractKiekerConfiguration.PROPS_PREFIX)));
                 }
-                if (key.equalsIgnoreCase(AbstractKiekerConfiguration.PROP_WRITER)) {
-                    warnings.add(
-                        FormValidation.error("Overriding '%s' is not supported and will most likely break the plugin!",
-                            AbstractKiekerConfiguration.PROP_WRITER));
-                }
-                if (key.equalsIgnoreCase(FileWriterConfiguration.PROP_STORAGE_PATH)) {
-                    warnings.add(
-                        FormValidation.error("Overriding '%s' is not supported and will most likely break the plugin!",
-                            FileWriterConfiguration.PROP_STORAGE_PATH));
+                if (key.equalsIgnoreCase(AbstractKiekerConfiguration.PROP_WRITER)
+                        || key.equalsIgnoreCase(FileWriterConfiguration.PROP_STORAGE_PATH)) {
+                    warnings.add(FormValidation.error(
+                            Messages.KiekerBuilder_DescriptorImpl_properties_unsupportedOverride(key)));
                 }
             }
 
