@@ -1,4 +1,4 @@
-package net.explorviz.jenkins.kiekerConfiguration;
+package net.explorviz.jenkins.kieker.configuration;
 
 import org.apache.commons.lang.Validate;
 

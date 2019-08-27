@@ -1,11 +1,66 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
-    <l:layout title="ExplorViz">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:t="/lib/hudson" xmlns:i="jelly:fmt" xmlns:f="/lib/form">
+    <l:layout title="ExplorViz" norefresh="true">
+        <st:include it="${it.run}" page="sidepanel.jelly" />
+
         <l:main-panel>
-            <p>
-                Kieker records saved in: ${it.test}
-            </p>
+            <h1>Recorded instrumentations</h1>
+            <ul>
+                <j:forEach var="record" items="${it.records}">
+                    <li>
+                        <j:choose>
+                            <j:when test="${!empty(record.name)}">
+                                <strong>${record.name} (${record.id}):</strong>
+                            </j:when>
+                            <j:otherwise>
+                                <strong>${record.id}:</strong>
+                            </j:otherwise>
+                        </j:choose>
+                        ${record.kiekerLogFolderName}
+                    </li>
+                </j:forEach>
+            </ul>
+
+            <!-- TODO: Fix permission check (always evaluates to true) -->
+            <j:if test="${h.hasPermission(it.run, ExplorVizGlobalConfiguration.RUN)}">
+                <f:form action="/plugin/explorviz-plugin/start" method="POST" name="explorVizInstanceConfiguration">
+                    <!-- TODO: Databind/Include this form to ExplorVizInstanceConfiguration or ExplorVizInstance -->
+
+                    <!-- TODO: Needs help files for fields -->
+                    <f:section title="Launch configuration">
+                        <f:entry title="ExplorViz version" field="explorVizDefinition">
+                            <select class="setting-input" name="instrumentationName">
+                                <!-- TODO: Load from descriptor -->
+                                <f:option selected="true" value="builtin1.4.0">Built-in 1.4.0 (default)</f:option>
+                            </select>
+                        </f:entry>
+                        <f:entry title="Open in new window" field="newWindow">
+                            <f:checkbox default="true"/>
+                        </f:entry>
+                        <f:entry title="Instrumentation" field="instrumentation">
+                            <select name="instrumentationName">
+                                <j:forEach var="record" indexVar="idx" items="${it.records}">
+                                    <j:choose>
+                                        <j:when test="${!empty(record.name)}">
+                                            <f:option selected="${idx==0}" value="${record.id}">${record.name}
+                                                (${record.id})
+                                            </f:option>
+                                        </j:when>
+                                        <j:otherwise>
+                                            <f:option selected="${idx==0}" value="${record.id}">${record.id}</f:option>
+                                        </j:otherwise>
+                                    </j:choose>
+                                </j:forEach>
+                            </select>
+                        </f:entry>
+                    </f:section>
+
+                    <f:bottomButtonBar>
+                        <f:apply value="Start ExplorViz"/>
+                    </f:bottomButtonBar>
+                </f:form>
+            </j:if>
         </l:main-panel>
     </l:layout>
 </j:jelly>
-

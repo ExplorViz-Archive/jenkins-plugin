@@ -10,10 +10,11 @@ import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import kieker.common.util.filesystem.FSUtil;
-import net.explorviz.jenkins.kiekerConfiguration.AbstractKiekerConfiguration;
-import net.explorviz.jenkins.kiekerConfiguration.FileWriterConfiguration;
+import net.explorviz.jenkins.kieker.configuration.AbstractKiekerConfiguration;
+import net.explorviz.jenkins.kieker.configuration.FileWriterConfiguration;
 import net.explorviz.jenkins.model.ExplorVizAction;
-import net.explorviz.jenkins.model.KiekerRecordAction;
+import net.explorviz.jenkins.model.InstrumentationRecord;
+import net.explorviz.jenkins.model.InstrumentationAction;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -29,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class KiekerBuilder extends Builder implements SimpleBuildStep {
     private static final String ARG_JAVA_AGENT = "-javaagent:";
     private static final String ARG_JAR = "-jar";
@@ -65,13 +67,14 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         this.executeDuration = executeDuration;
 
         // Must match defaults in KiekerBuilder/config.jelly
-        this.appArgs = null;
+        this.runName = "";
+        this.appArgs = "";
         this.skipDefaultAOP = true;
         this.failBuildOnEmpty = true;
 
-        this.vmOpts = null;
-        this.kiekerJar = null;
-        this.kiekerOverrides = null;
+        this.vmOpts = "";
+        this.kiekerJar = "";
+        this.kiekerOverrides = "";
     }
 
     public String getRunId() {
@@ -284,7 +287,8 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             listener.getLogger().println("Kieker records were saved to: " + recordDir.get().getRemote());
 
             maybeAddExplorVizAction(run);
-            run.addAction(new KiekerRecordAction(runId, runName, recordDir.get().getName()));
+            InstrumentationRecord record = new InstrumentationRecord(runId, runName, recordDir.get().getName(), exitCode);
+            run.addAction(new InstrumentationAction(record));
         } else {
             if (failBuildOnEmpty) {
                 listener.error("No kieker records have been written. Failing build as a result.");
@@ -321,7 +325,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    @SuppressWarnings({ "MethodMayBeStatic", "rawtypes", "unused" })
+    @SuppressWarnings({ "MethodMayBeStatic", "rawtypes" })
     @Symbol("kieker")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -334,7 +338,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "ExplorViz: Run Kieker instrumentation";
+            return "Run Kieker instrumentation for ExplorViz";
         }
 
         public FormValidation doCheckRunId(@QueryParameter String value) {
@@ -345,8 +349,12 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             return FormValidation.ok();
         }
 
+        /*
+         * Note: project can be null when this Descriptor is used from the Pipeline Snippet Generator page!
+         */
+
         public FormValidation doCheckAppJar(@QueryParameter String value, @AncestorInPath AbstractProject project) {
-            return FormValidationHelper.validateFilePath(project.getSomeWorkspace(), value, true);
+            return FormValidationHelper.validateFilePath(project, value, true);
         }
 
         public FormValidation doCheckAppArgs(@QueryParameter String value) {
@@ -354,15 +362,11 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
 
         public FormValidation doCheckAopXml(@QueryParameter String value, @AncestorInPath AbstractProject project) {
-            return FormValidationHelper.validateFilePath(project.getSomeWorkspace(), value, true);
+            return FormValidationHelper.validateFilePath(project, value, true);
         }
 
-        public FormValidation doCheckExecuteDuration(@QueryParameter int value) {
-            if (value <= 0) {
-                return FormValidation.error("Duration must be a positive number!");
-            }
-
-            return FormValidation.ok();
+        public FormValidation doCheckExecuteDuration(@QueryParameter String value) {
+            return FormValidation.validatePositiveInteger(value);
         }
 
         public FormValidation doCheckVmOpts(@QueryParameter String value) {
@@ -392,7 +396,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
         }
 
         public FormValidation doCheckKiekerJar(@QueryParameter String value, @AncestorInPath AbstractProject project) {
-            return FormValidationHelper.validateFilePath(project.getSomeWorkspace(), value, false);
+            return FormValidationHelper.validateFilePath(project, value, false);
         }
 
         public FormValidation doCheckKiekerOverrides(@QueryParameter String value) {
@@ -400,7 +404,7 @@ public class KiekerBuilder extends Builder implements SimpleBuildStep {
             try {
                 properties.load(new StringReader(value));
             } catch (IOException e) {
-                return FormValidation.error(e, "Could not read properties");
+                return FormValidation.error(e, "Could not read entered text as properties");
             }
 
             Collection<FormValidation> warnings = new HashSet<>(0);

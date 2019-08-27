@@ -1,4 +1,4 @@
-package net.explorviz.jenkins.kiekerReplay;
+package net.explorviz.jenkins.kieker.replay;
 
 import kieker.analysis.sink.DataSinkStage;
 import kieker.analysis.source.file.DirectoryReaderStage;

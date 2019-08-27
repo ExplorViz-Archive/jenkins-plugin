@@ -1,32 +1,38 @@
 package net.explorviz.jenkins.model;
 
-import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
-import jenkins.tasks.SimpleBuildStep;
+import org.kohsuke.stapler.StaplerProxy;
 
-import java.util.Collection;
-import java.util.Collections;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Added to builds to display the {@code ExplorViz} entry in the build menu.
  */
-public class ExplorVizAction implements RunAction2, SimpleBuildStep.LastBuildAction {
+public class ExplorVizAction implements RunAction2, StaplerProxy {
     /**
      * We may only keep a transient copy the parent objects, obtained in {@link #onLoad(Run)}
      */
-    private transient Run<?,?> run;
+    private transient Run<?, ?> run;
 
-    public String getTest() {
-        return run.getActions(KiekerRecordAction.class).get(0).getKiekerLogFolderName();
+    @CheckForNull
+    public Run getRun() {
+        return this.run;
+    }
+
+    @Nonnull
+    public InstrumentationRecord[] getRecords() {
+        return run.getActions(InstrumentationAction.class).stream().map(InstrumentationAction::getRecord)
+                .toArray(InstrumentationRecord[]::new);
     }
 
     /*
      * RunAction2
      */
-
     @Override
     public void onAttached(Run<?, ?> run) {
+        this.run = run;
     }
 
     @Override
@@ -40,12 +46,14 @@ public class ExplorVizAction implements RunAction2, SimpleBuildStep.LastBuildAct
 
     @Override
     public String getIconFileName() {
-        return "/plugin/explorviz-plugin/images/24x24/explorviz.png";
+        // null hides the activity from the menu
+        return this.run.hasPermission(ExplorVizGlobalConfiguration.VIEW) ?
+                "/plugin/explorviz-plugin/images/24x24/explorviz.png" : null;
     }
 
     @Override
     public String getDisplayName() {
-        return "Visualize in ExplorViz";
+        return "ExplorViz Visualization";
     }
 
     @Override
@@ -54,11 +62,12 @@ public class ExplorVizAction implements RunAction2, SimpleBuildStep.LastBuildAct
     }
 
     /*
-     * LastBuildAction
+     * StaplerProxy
      */
 
     @Override
-    public Collection<? extends Action> getProjectActions() {
-        return Collections.emptyList();
+    public Object getTarget() {
+        this.run.checkPermission(ExplorVizGlobalConfiguration.VIEW);
+        return this; // TODO: Or ExplorVizInstanceConfiguration?
     }
 }

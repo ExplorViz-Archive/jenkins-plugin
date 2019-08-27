@@ -1,6 +1,6 @@
-package net.explorviz.jenkins.kiekerReplay;
+package net.explorviz.jenkins.kieker.replay;
 
-import net.explorviz.jenkins.kiekerConfiguration.KiekerConfiguration;
+import net.explorviz.jenkins.kieker.configuration.KiekerConfiguration;
 import teetime.framework.Execution;
 
 import java.io.File;
@@ -19,6 +19,8 @@ public class RecordReplayer {
     }
 
     public void kill() {
-        execution.abortEventually();
+        if (execution != null) {
+            execution.abortEventually();
+        }
     }
 }
